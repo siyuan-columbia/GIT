@@ -38,6 +38,7 @@ int main(int argc, char **argv) {
   int maxnpending = 1;
   
   // Parse and set command line arguments
+    
   while ((option_char = getopt_long(argc, argv, "p:m:hx", gLongOptions, NULL)) != -1) {
    switch (option_char) {
       case 'p': // listen-port
@@ -57,7 +58,7 @@ int main(int argc, char **argv) {
   }
 
     setbuf(stdout, NULL); // disable buffering
-
+   
     if ((portno < 1025) || (portno > 65535)) {
         fprintf(stderr, "%s @ %d: invalid port number (%d)\n", __FILE__, __LINE__, portno);
         exit(1);
@@ -73,42 +74,51 @@ int main(int argc, char **argv) {
   struct sockaddr_in client;
   int sock;
   int new;
-  int sockaddr_len=sizeof(struct sockaddr_in);
+  socklen_t sockaddr_len=sizeof(struct sockaddr_in);
   int data_len;
   char data[BUFSIZE];
   
-  /*
+  
   if ((sock=socket(AF_INET,SOCK_STREAM,0))==ERROR)
   {
 	  perror("server socket: ");
 	  exit(-1);
   }
-  */
+  
   /*server structure*/
   server.sin_family=AF_INET;
-  server.sin_port=htons(atoi(argv[1]));
+  //server.sin_port=htons(atoi(argv[1]));
+  server.sin_port=htons(portno);
   server.sin_addr.s_addr=INADDR_ANY;
   bzero(&server.sin_zero,8);
   
-  /*
+  int option = 1;
+  setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
+  
   if((bind(sock,(struct sockaddr *)&server, sockaddr_len))==ERROR)
   {
 	  perror("bind: ");
 	  exit(-1);
   }
-  */
+  if((listen(sock,maxnpending))==ERROR)
+  {
+      perror("listen");
+      exit(-1);
+  }
+  
    /*main loop*/
    while(1)
    {
-	   /*
-	   if((new = accept(sock,(struct sockaddr *)&client, &sockaddr_len))==ERROR)
+	   
+	   if((new = accept(sock, (struct sockaddr *) &client, &sockaddr_len))==ERROR)
 	   {
 		   perror("accept");
 		   exit(-1);
 	   }
-	   printf("New Client connected from port no %d abd IP %s\n",ntohs(client.sin_port),inet._ntoa(client.sin_addr));
+       
+	   //printf("New Client connected");
+      
 	   data_len=1;
-	   */
 	   /*start a loop to tell a client is connected*/
 	   while(data_len)
 	   {
@@ -118,12 +128,10 @@ int main(int argc, char **argv) {
 		   {
 			   send(new,data,data_len,0);
 			   data[data_len]='\0';
-			   /*printf("sent msg:%s",data);*/
 			   printf("%s",data);
 		   }
 	   }
-	   /*printf("Client disconnected\n");*/
-	   close(new)
+       close(new);
    }
   
 

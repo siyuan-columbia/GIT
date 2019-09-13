@@ -38,6 +38,8 @@ int main(int argc, char **argv)
     char *hostname = "localhost";
     unsigned short portno = 19121;
     char *message = "Hello World!!";
+    long nHostAddress;
+    struct hostent* pHostInfo;
 
     // Parse and set command line arguments
     while ((option_char = getopt_long(argc, argv, "s:p:m:hx", gLongOptions, NULL)) != -1)
@@ -95,19 +97,30 @@ int main(int argc, char **argv)
 		exit(-1);
 	}
 	remote_server.sin_family=AF_INET;
-	remote_server.sin_port=htons(atoi(argv[2]));
-	remote_server.sin_addr.s_addr=inet_addr(argv[1]);
+    
+
+    remote_server.sin_port=htons(portno);
+    
+
+    pHostInfo=gethostbyname(hostname);
+    memcpy(&nHostAddress,pHostInfo->h_addr,pHostInfo->h_length);
+ 
+    remote_server.sin_addr.s_addr=nHostAddress;
+    
 	bzero(&remote_server.sin_zero,8);
-	
-	while(1)
-	{
-		fgets(input,BUFSIZE,stdin);
-		send(sock,input,strlen(input),0);
+	if((connect(sock,(struct sockaddr *)&remote_server,sizeof(struct sockaddr)))==ERROR)
+    {
+        perror("connect");
+        exit(1);
+    }
+
+    fgets(input,BUFSIZE,stdin);
+	send(sock,input,strlen(input),0);
 		
-		len=recv(sock,output,BUFSIZE,0);
-		output[len]='\0';
-		printf("%s\n",output);
-	}
+	len=recv(sock,output,BUFSIZE,0);
+	output[len]='\0';
+	printf("%s\n",output);
+
 	close(sock);
 
 }
