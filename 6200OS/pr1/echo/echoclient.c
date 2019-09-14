@@ -119,7 +119,7 @@ int main(int argc, char **argv)
 		
 	len=recv(sock,output,BUFSIZE,0);
 	output[len]='\0';
-	printf("%s\n",output);
+	printf("%s",output);
 
 	close(sock);
 

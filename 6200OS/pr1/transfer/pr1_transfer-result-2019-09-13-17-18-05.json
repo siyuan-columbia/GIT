@@ -1,0 +1,44 @@
+{
+    "tests": [
+        {
+            "output": {
+                "client_returncode": 1,
+                "server_console": "",
+                "passfail": "failed",
+                "server_returncode": null,
+                "client_console": "ASAN:DEADLYSIGNAL\n=================================================================\n==69==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000074 (pc 0x7fd9934dcd91 bp 0x7ffe57410750 sp 0x7ffe57410100 T0)\n==69==The signal is caused by a READ memory access.\n==69==Hint: address points to the zero page.\n    #0 0x7fd9934dcd90 in fgetc (/lib/x86_64-linux-gnu/libc.so.6+0x87d90)\n    #1 0x55837fb8f04b in main /home/grader/pr1_transfer/workspace/transferclient.c:118\n    #2 0x7fd993476b96 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x21b96)\n    #3 0x55837fa901e9 in _start (/home/grader/pr1_transfer/workspace/transferclient+0x81e9)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV (/lib/x86_64-linux-gnu/libc.so.6+0x87d90) in fgetc\n==69==ABORTING\n"
+            },
+            "traceback": "Traceback (most recent call last):\n  File \"/home/grader/pr1_transfer/gios.py\", line 293, in func_wrapper\n    ans = func(self)\n  File \"run.py\", line 67, in test_client\n    ['./transferclient', '-p', self.port, '-s', 'localhost', '-o', outputFileName])\n  File \"/home/grader/pr1_transfer/gios.py\", line 233, in converse\n    \"The client exited abnormally. (exit code {})\".format(self.p_client.poll()))\nAssertionError: The client exited abnormally. (exit code 1)\n",
+            "description": "Tests that the client accurately saves the file sent from the server."
+        },
+        {
+            "output": {
+                "client_returncode": null,
+                "server_console": "",
+                "passfail": "failed",
+                "server_returncode": null,
+                "client_console": ""
+            },
+            "traceback": "Traceback (most recent call last):\n  File \"/home/grader/pr1_transfer/gios.py\", line 293, in func_wrapper\n    ans = func(self)\n  File \"run.py\", line 92, in test_server\n    ['./bvttransferclient', '-p', self.port, '-s', 'localhost', '-o', outputFileName])\n  File \"/home/grader/pr1_transfer/gios.py\", line 231, in converse\n    self.assertIsNotNone(self.p_client.poll(), \"The client is taking too long (probably hung).\")\nAssertionError: The client is taking too long (probably hung).\n",
+            "description": "Tests that the server accurately sends the file to the client."
+        },
+        {
+            "output": {
+                "client_returncode": 0,
+                "passfail": "passed",
+                "client_console": "gcc -o transferclient -Wall -Werror --std=gnu99 -g3 -fsanitize=address -fno-omit-frame-pointer -Wno-format-security transferclient.c -lpthread -static-libasan\n"
+            },
+            "traceback": "",
+            "description": "Tests that the client compiles"
+        },
+        {
+            "output": {
+                "server_console": "gcc -o transferserver -Wall -Werror --std=gnu99 -g3 -fsanitize=address -fno-omit-frame-pointer -Wno-format-security transferserver.c -lpthread -static-libasan\n",
+                "passfail": "passed",
+                "server_returncode": 0
+            },
+            "traceback": "",
+            "description": "Tests that the server compiles"
+        }
+    ]
+}

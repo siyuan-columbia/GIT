@@ -9,8 +9,9 @@
 #include <netinet/in.h>
 #include <sys/types.h>
 
-#define BUFSIZE 1219
 
+#define BUFSIZE 1219
+#define ERROR -1
 #define USAGE                                                \
     "usage:\n"                                               \
     "  transferserver [options]\n"                           \
@@ -31,6 +32,9 @@ int main(int argc, char **argv)
     int option_char;
     int portno = 19121;             /* port to listen on */
     char *filename = "6200.txt"; /* file to transfer */
+    int maxnpending = 1;
+    char buffer[BUFSIZE];
+
 
     setbuf(stdout, NULL); // disable buffering
 
@@ -69,5 +73,76 @@ int main(int argc, char **argv)
     }
 
     /* Socket Code Here */
+    
+    struct sockaddr_in server;
+    struct sockaddr_in client;
+    int sock;
+    int new;
+    socklen_t sockaddr_len=sizeof(struct sockaddr_in);
+   
+    
+    
+    if ((sock=socket(AF_INET,SOCK_STREAM,0))==ERROR)
+    {
+        perror("server socket: ");
+        exit(-1);
+    }
+    
+    /*server structure*/
+    server.sin_family=AF_INET;
+    server.sin_port=htons(portno);
+    server.sin_addr.s_addr=INADDR_ANY;
+    bzero(&server.sin_zero,8);
+    
+    int option = 1;
+    setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
+    
+    if((bind(sock,(struct sockaddr *)&server, sockaddr_len))==ERROR)
+    {
+        perror("bind: ");
+        exit(-1);
+    }
+    if((listen(sock,maxnpending))==ERROR)
+    {
+        perror("listen");
+        exit(-1);
+    }
+    
+    FILE *f;
+    
+    char c;
+    char ch;
+    /*main loop*/
+    while(1)
+    {
+        bzero(buffer,BUFSIZE);
+        int words=0;
+        if((new = accept(sock, (struct sockaddr *) &client, &sockaddr_len))==ERROR)
+        {
+            perror("accept");
+            exit(-1);
+        }
+        
+        f=fopen(filename,"r");
+        while((c=getc(f))!=EOF)
+        {
+            fscanf(f,"%s",buffer);
+            words++;
+        }
+        write(new,&words,sizeof(int));
+        rewind(f);
+        
+        while(ch!=EOF)
+        {
+            fscanf(f,"%s",buffer);
+            //printf("%s\n",buffer);
+            write(new,buffer,BUFSIZE);
+            ch=fgetc(f);
+        }
+        ch='\0';
+        fclose(f);
+        close(new);
+     
+    }
 
 }

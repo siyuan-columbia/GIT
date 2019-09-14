@@ -8,9 +8,10 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/types.h>
+#include <ctype.h>
 
 #define BUFSIZE 1219
-
+#define ERROR -1
 #define USAGE                                                \
     "usage:\n"                                               \
     "  transferclient [options]\n"                           \
@@ -35,6 +36,9 @@ int main(int argc, char **argv)
     char *hostname = "localhost";
     unsigned short portno = 19121;
     char *filename = "cs6200.txt";
+    long nHostAddress;
+    struct hostent* pHostInfo;
+    char buffer[BUFSIZE];
 
     setbuf(stdout, NULL);
 
@@ -81,4 +85,50 @@ int main(int argc, char **argv)
     }
 
     /* Socket Code Here */
+    struct sockaddr_in remote_server;
+    int sock;
+
+    if((sock=socket(AF_INET,SOCK_STREAM,0))==ERROR)
+    {
+        perror("socket");
+        exit(-1);
+    }
+    remote_server.sin_family=AF_INET;
+    
+    
+    remote_server.sin_port=htons(portno);
+    
+    
+    pHostInfo=gethostbyname(hostname);
+    memcpy(&nHostAddress,pHostInfo->h_addr,pHostInfo->h_length);
+    
+    remote_server.sin_addr.s_addr=nHostAddress;
+    
+    bzero(&remote_server.sin_zero,8);
+    if((connect(sock,(struct sockaddr *)&remote_server,sizeof(struct sockaddr)))==ERROR)
+    {
+        perror("connect");
+        exit(1);
+    }
+    //printf("geting file");
+    
+    FILE *fp;
+    int ch=0;
+    bzero(buffer,BUFSIZE);
+    fp=fopen(filename,"a");
+    int words=0;
+    //printf("%d",words);
+    read(sock,&words,sizeof(int));
+    //printf("%d",words);
+    while(ch!=words)
+    {
+        read(sock,buffer,BUFSIZE);
+        //printf("%s\n",buffer);
+        fprintf(fp,"%s ",buffer);
+        ch++;
+    }
+    fclose(fp);
+    ch='\0';
+    close(sock);
+    
 }
