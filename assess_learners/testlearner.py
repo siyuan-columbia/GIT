@@ -32,6 +32,7 @@ import LinRegLearner as lrl
 import DTLearner as dt
 import RTLearner as rt
 import BagLearner as bl
+import InsaneLearner as it
   		  	   		     		  		  		    	 		 		   		 		  
 if __name__ == "__main__":  		  	   		     		  		  		    	 		 		   		 		  
     if len(sys.argv) != 2:  		  	   		     		  		  		    	 		 		   		 		  
@@ -243,3 +244,15 @@ if __name__ == "__main__":
     c = np.corrcoef(pred_y, y=test_y)
     print(f"corr (BagLearner-rt, Bag_size=20): {c[0, 1]}")
     ##########end of BagLearner-rt###############
+
+    ###test insane learner###
+    Insanelearner = it.InsaneLearner(verbose=False)
+    Insanelearner.add_evidence(train_x, train_y)
+    pred_y = Insanelearner.query(test_x)
+    print()
+    print("Out of sample results (InsaneLearner)")
+    c = np.corrcoef(pred_y, y=test_y)
+    print(f"corr: {c[0, 1]}")
+
+
+    ###end of test insane learner###
